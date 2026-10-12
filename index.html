@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EMDoryoku — La cámara no miente. Tu voluntad tampoco.</title>
+  <meta name="description" content="La primera app de flexiones que usa visión artificial en la cámara frontal para validar tu técnica en tiempo real: 90° de codo y espalda recta. Cero botones, cero trampas. Descarga el APK para Android." />
+  <meta name="theme-color" content="#0E1116" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="EMDoryoku — La cámara no miente. Tu voluntad tampoco." />
+  <meta property="og:description" content="Flexiones validadas por visión artificial en tu dispositivo. 90° de codo, espalda recta, cero trampas. Sin registro de video." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E1116'/%3E%3Ctext x='32' y='43' font-family='Arial Black,Arial' font-weight='900' font-size='28' text-anchor='middle' fill='%2300E676'%3EEM%3C/text%3E%3C/svg%3E" />
+
+  <script>document.documentElement.classList.add('js');</script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            carbon: '#0E1116',
+            asphalt: '#161B22',
+            neon: '#00E676',
+            crimson: '#FF1744',
+            fire: '#FFB300'
+          },
+          fontFamily: {
+            display: ['Syne', 'Inter', 'system-ui', 'sans-serif'],
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['"Roboto Mono"', 'ui-monospace', 'monospace']
+          },
+          keyframes: {
+            float: { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-12px)' } }
+          },
+          animation: { float: 'float 6s ease-in-out infinite' }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    html { -webkit-text-size-adjust: 100%; }
+    /* Escala tipográfica para pantallas grandes (todo en rem): 2K / 4K */
+    @media (min-width: 2200px) { html { font-size: 18px; } }
+    @media (min-width: 3000px) { html { font-size: 22px; } }
+    body { background: #0E1116; }
+
+    .ico { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .ico-fill { fill: currentColor; }
+
+    .bg-grid {
+      background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size: 44px 44px;
+      -webkit-mask-image: radial-gradient(ellipse at 50% 30%, #000 25%, transparent 75%);
+      mask-image: radial-gradient(ellipse at 50% 30%, #000 25%, transparent 75%);
+    }
+
+    /* Glassmorphism sutil */
+    .glass {
+      background: linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.015));
+      border: 1px solid rgba(255,255,255,.08);
+      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(14px);
+    }
+    .glass-neon { border-color: rgba(0,230,118,.38); box-shadow: 0 0 0 1px rgba(0,230,118,.10), 0 0 48px -10px rgba(0,230,118,.38); }
+    .glass-red  { border-color: rgba(255,23,68,.28);  box-shadow: 0 0 40px -14px rgba(255,23,68,.35); }
+    .text-glow  { text-shadow: 0 0 26px rgba(0,230,118,.55); }
+    .card-lift  { transition: transform .35s cubic-bezier(.2,.8,.2,1), border-color .35s ease, box-shadow .35s ease; }
+    .card-lift:hover { transform: translateY(-6px); }
+    .btn-glow   { transition: transform .25s ease, box-shadow .25s ease, background-color .25s ease, border-color .25s ease; }
+
+    /* Reveal al hacer scroll (solo si hay JS) */
+    .js .reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.8,.2,1); }
+    .js .reveal.is-visible { opacity: 1; transform: none; }
+
+    /* Mockup del smartphone */
+    .phone-stage { perspective: 1400px; }
+    .phone { transform: rotateX(16deg) rotateY(-20deg) rotateZ(3deg); transform-style: preserve-3d; transition: transform .8s cubic-bezier(.2,.8,.2,1); }
+    .phone-stage:hover .phone { transform: rotateX(6deg) rotateY(-8deg) rotateZ(1deg); }
+    .phone-frame { box-shadow: 0 50px 90px -30px rgba(0,230,118,.35), 0 0 0 1px rgba(255,255,255,.08), inset 0 0 0 1px rgba(255,255,255,.05); }
+    .phone-floor {
+      position: absolute; left: 50%; bottom: -34px; width: 135%; height: 70px; transform: translateX(-50%);
+      background: radial-gradient(ellipse at center, rgba(0,230,118,.38) 0%, rgba(0,230,118,.08) 45%, transparent 70%);
+      filter: blur(6px);
+    }
+    .screen-bg { background: radial-gradient(120% 55% at 50% 100%, #12301f 0%, #0b1210 55%, #080b0e 100%); }
+    .scan {
+      position: absolute; inset: 0; pointer-events: none; z-index: 5;
+      background: linear-gradient(180deg, transparent 0%, rgba(0,230,118,.10) 50%, transparent 100%);
+      background-size: 100% 22%; background-repeat: no-repeat; animation: scan 4s linear infinite;
+    }
+    @keyframes scan { from { background-position: 0 -30%; } to { background-position: 0 130%; } }
+    @keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.18); } 100% { transform: scale(1); } }
+    .pop { animation: pop .45s ease; }
+
+    /* FAQ acordeón con transición suave */
+    .faq-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s ease; }
+    .faq-panel[data-open="true"] { grid-template-rows: 1fr; }
+    .faq-panel > div { overflow: hidden; }
+
+    [data-faq] { transition: border-color .3s ease, box-shadow .3s ease; }
+    [data-faq] h3 svg { transition: transform .3s ease; }
+    [data-faq].is-open { border-color: rgba(0,230,118,.4); box-shadow: 0 0 34px -12px rgba(0,230,118,.45); }
+    [data-faq].is-open h3 svg { transform: rotate(180deg); }
+
+    /* Estado del mockup (lo cambia el script) */
+    .st { transition: color .2s ease, background-color .2s ease, border-color .2s ease; }
+    .st-ok  { color: #00E676; background: rgba(0,230,118,.10); border-color: rgba(0,230,118,.40); }
+    .st-bad { color: #FF1744; background: rgba(255,23,68,.10); border-color: rgba(255,23,68,.40); }
+
+    /* Toast y enlace activo del menú */
+    #toast.show { opacity: 1; --tw-translate-y: 0px; }
+    header nav a[aria-current="true"] { color: #00E676; }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto !important; }
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .js .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+
+<body class="bg-carbon font-sans text-slate-300 antialiased selection:bg-neon selection:text-carbon">
+
+  <!-- ===== Iconos SVG (sprite) ===== -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="hidden" aria-hidden="true">
+    <symbol id="i-android" viewBox="0 0 24 24"><path d="M17.6 9.48l1.84-3.18a.64.64 0 0 0-1.1-.64l-1.86 3.22a11.46 11.46 0 0 0-8.96 0L5.66 5.66a.64.64 0 0 0-1.1.64L6.4 9.48A10.78 10.78 0 0 0 1 18h22a10.78 10.78 0 0 0-5.4-8.52zM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-4-1-6 1-10z"/></symbol>
+    <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.37-3.87-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.08-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.62 1.59.23 2.76.11 3.05.74.8 1.18 1.82 1.18 3.08 0 4.42-2.69 5.4-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></symbol>
+  </svg>
+
+  <!-- ===== A. HEADER / NAVBAR ===== -->
+  <header class="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-carbon/70 backdrop-blur-xl">
+    <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+      <a href="#inicio" class="font-display text-xl font-extrabold tracking-tight text-white" aria-label="EMDoryoku — inicio">
+        <span class="text-neon text-glow">EM</span>Doryoku
+      </a>
+
+      <nav class="hidden items-center gap-8 text-sm font-medium text-slate-400 lg:flex" aria-label="Navegación principal">
+        <a href="#por-que" class="transition-colors hover:text-neon">¿Por qué EMDoryoku?</a>
+        <a href="#como-funciona" class="transition-colors hover:text-neon">Cómo Funciona</a>
+        <a href="#la-regla" class="transition-colors hover:text-neon">La Regla</a>
+        <a href="#faq" class="transition-colors hover:text-neon">Preguntas Frecuentes</a>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <a href="/releases/EMDoryoku-latest.apk" download="EMDoryoku-v1.0.apk"
+           class="btn-glow inline-flex items-center gap-2 rounded-xl bg-neon px-3.5 py-2 text-xs font-bold text-carbon shadow-[0_0_18px_rgba(0,230,118,.35)] hover:scale-105 hover:shadow-[0_0_32px_rgba(0,230,118,.65)] active:scale-95 sm:px-4 sm:text-sm">
+          <svg class="ico-fill h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true"><use href="#i-android"/></svg>
+          Descargar APK
+        </a>
+        <button id="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-menu" aria-label="Abrir menú"
+                class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-300 transition hover:border-neon/50 hover:text-neon lg:hidden">
+          <svg class="ico h-5 w-5" aria-hidden="true"><use href="#i-menu"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobile-menu" class="hidden border-t border-white/5 bg-carbon/95 lg:hidden">
+      <nav class="mx-auto flex max-w-7xl flex-col px-4 py-3 text-sm font-medium text-slate-300 sm:px-6" aria-label="Navegación móvil">
+        <a href="#por-que" class="rounded-lg px-3 py-3 hover:bg-white/5 hover:text-neon">¿Por qué EMDoryoku?</a>
+        <a href="#como-funciona" class="rounded-lg px-3 py-3 hover:bg-white/5 hover:text-neon">Cómo Funciona</a>
+        <a href="#la-regla" class="rounded-lg px-3 py-3 hover:bg-white/5 hover:text-neon">La Regla</a>
+        <a href="#faq" class="rounded-lg px-3 py-3 hover:bg-white/5 hover:text-neon">Preguntas Frecuentes</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- ===== B. HERO ===== -->
+    <section id="inicio" class="relative overflow-hidden pt-28 pb-20 sm:pt-32 lg:pt-36 lg:pb-28">
+      <div class="bg-grid pointer-events-none absolute inset-0" aria-hidden="true"></div>
+      <div class="pointer-events-none absolute -top-40 left-1/2 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-neon/10 blur-[120px]" aria-hidden="true"></div>
+      <div class="pointer-events-none absolute top-1/2 -right-40 h-[26rem] w-[26rem] rounded-full bg-crimson/10 blur-[120px]" aria-hidden="true"></div>
+
+      <div class="relative mx-auto grid max-w-7xl items-center gap-14 px-4 sm:px-6 lg:grid-cols-[1.1fr_.9fr] lg:gap-8 lg:px-8">
+        <div class="reveal text-center lg:text-left">
+          <span class="inline-flex max-w-full items-center gap-2 rounded-full border border-neon/30 bg-neon/10 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-neon sm:text-xs">
+            ⚡ Visión Artificial en el Dispositivo • Sin registro de video
+          </span>
+
+          <h1 class="mt-6 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl xl:text-7xl">
+            La cámara no miente.
+            <span class="block text-neon text-glow">Tu voluntad tampoco.</span>
+          </h1>
+
+          <p class="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-slate-400 sm:text-lg lg:mx-0">
+            Olvídate de tocar la pantalla con la nariz o pulsar botones. EMDoryoku usa la cámara frontal de tu teléfono para vigilar tu técnica, validar los 90° de profundidad y forjar tu disciplina en cada repetición.
+          </p>
+
+          <div class="mt-9 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:justify-center lg:justify-start">
+            <a href="/releases/EMDoryoku-latest.apk" download="EMDoryoku-v1.0.apk"
+               class="btn-glow group inline-flex items-center justify-center gap-3 rounded-2xl bg-neon px-6 py-4 text-carbon shadow-[0_0_30px_rgba(0,230,118,.4)] hover:scale-[1.03] hover:shadow-[0_0_55px_rgba(0,230,118,.7)] active:scale-95">
+              <svg class="ico-fill h-7 w-7 shrink-0" aria-hidden="true"><use href="#i-android"/></svg>
+              <span class="text-left leading-tight">
+                <span class="block text-base font-extrabold sm:text-lg">Descargar APK para Android</span>
+                <span class="block font-mono text-xs font-medium text-carbon/75">v1.0 MVP · ~35 MB</span>
+              </span>
+            </a>
+
+            <button type="button" data-dialog="dlg-demo"
+                    class="btn-glow inline-flex items-center justify-center gap-2.5 rounded-2xl border border-white/15 bg-white/5 px-6 py-4 text-base font-semibold text-white hover:scale-[1.03] hover:border-neon/60 hover:bg-neon/10 hover:shadow-[0_0_30px_rgba(0,230,118,.25)] active:scale-95">
+              <svg class="ico-fill h-5 w-5 text-neon" aria-hidden="true"><use href="#i-play"/></svg>
+              Ver demo en video
+            </button>
+          </div>
+
+          <ul class="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-slate-400 lg:justify-start">
+            <li class="inline-flex items-center gap-1.5"><svg class="ico h-4 w-4 text-neon" aria-hidden="true"><use href="#i-check"/></svg>Android 8.0+</li>
+            <li class="inline-flex items-center gap-1.5"><svg class="ico h-4 w-4 text-neon" aria-hidden="true"><use href="#i-check"/></svg>Sin cuenta ni registro</li>
+            <li class="inline-flex items-center gap-1.5"><svg class="ico h-4 w-4 text-neon" aria-hidden="true"><use href="#i-check"/></svg>Procesamiento 100% local</li>
+          </ul>
+
+          <dl class="mx-auto mt-10 grid max-w-xl grid-cols-3 gap-3 lg:mx-0">
+            <div class="glass rounded-2xl px-3 py-4 text-center">
+              <dt class="text-[11px] uppercase tracking-wide text-slate-500">Profundidad</dt>
+              <dd class="mt-1 font-mono text-2xl font-bold text-neon sm:text-3xl">90°</dd>
+            </div>
+            <div class="glass rounded-2xl px-3 py-4 text-center">
+              <dt class="text-[11px] uppercase tracking-wide text-slate-500">Rendimiento</dt>
+              <dd class="mt-1 font-mono text-2xl font-bold text-fire sm:text-3xl">25<span class="text-base text-slate-500"> FPS</span></dd>
+            </div>
+            <div class="glass rounded-2xl px-3 py-4 text-center">
+              <dt class="text-[11px] uppercase tracking-wide text-slate-500">Video subido</dt>
+              <dd class="mt-1 font-mono text-2xl font-bold text-white sm:text-3xl">0<span class="text-base text-slate-500"> B</span></dd>
+            </div>
+          </dl>
+        </div>
+
+        <!-- Mockup smartphone en ángulo de suelo -->
+        <div class="reveal relative mx-auto w-full max-w-md lg:max-w-none" role="img" aria-label="Maqueta de la app EMDoryoku mostrando el esqueleto de pose estimation y el contador de repeticiones">
+          <div class="pointer-events-none absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-neon/20 blur-[90px]" aria-hidden="true"></div>
+
+          <div class="animate-float relative mx-auto w-fit py-10">
+            <div class="phone-stage">
+              <div class="phone">
+                <div class="phone-frame relative aspect-[9/19] w-[15.5rem] overflow-hidden rounded-[2.6rem] border-[7px] border-[#232b36] bg-[#05080a] sm:w-[17.5rem]">
+                  <div class="screen-bg absolute inset-0"></div>
+                  <div class="scan"></div>
+                  <div class="absolute left-1/2 top-2 z-20 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-black ring-1 ring-white/10"></div>
+
+                  <!-- HUD superior -->
+                  <div class="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-4 pt-8 font-mono text-[10px] text-slate-300">
+                    <span class="rounded-full border border-fire/40 bg-fire/10 px-2 py-0.5 text-fire">PACTO · 20</span>
+                    <span class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/40 px-2 py-0.5">
+                      <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-neon"></span>IA LOCAL
+                    </span>
+                  </div>
+
+                  <!-- Contador gigante -->
+                  <div class="absolute inset-x-0 top-[17%] z-10 text-center">
+                    <div id="rep-count" class="font-mono text-[6.5rem] font-bold leading-none text-neon text-glow sm:text-[7.5rem]">07</div>
+                    <div class="mt-1 font-mono text-[10px] uppercase tracking-[.35em] text-slate-400">repeticiones</div>
+                  </div>
+
+                  <!-- Esqueleto de pose estimation (lo anima el script) -->
+                  <svg class="absolute inset-x-0 bottom-[17%] z-10 w-full" viewBox="0 215 200 105" fill="none" aria-hidden="true">
+                    <defs>
+                      <linearGradient id="gnd" x1="0" x2="1" y1="0" y2="0">
+                        <stop offset="0" stop-color="#00E676" stop-opacity="0"/>
+                        <stop offset=".5" stop-color="#00E676" stop-opacity=".85"/>
+                        <stop offset="1" stop-color="#00E676" stop-opacity="0"/>
+                      </linearGradient>
+                    </defs>
+                    <line x1="0" y1="314" x2="200" y2="314" stroke="url(#gnd)" stroke-width="1.5"/>
+                    <g id="sk" style="color:#00E676;filter:drop-shadow(0 0 4px currentColor)" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline id="sk-body" points="22,308 98,260"/>
+                      <polyline id="sk-arm" points="98,260 98,285 98,308"/>
+                      <circle id="sk-head" r="9" fill="#0E1116" cx="112" cy="252"/>
+                      <g fill="#0E1116" stroke-width="2.4">
+                        <circle data-j="a" r="3.6" cx="22" cy="308"/>
+                        <circle data-j="k" r="3.6" cx="60" cy="284"/>
+                        <circle data-j="h" r="3.6" cx="80" cy="271"/>
+                        <circle data-j="s" r="3.6" cx="98" cy="260"/>
+                        <circle data-j="e" r="3.6" cx="98" cy="285"/>
+                        <circle data-j="w" r="3.6" cx="98" cy="308"/>
+                      </g>
+                    </g>
+                    <path id="sk-arc" stroke="#FFB300" stroke-width="1.8" stroke-linecap="round" fill="none" d=""/>
+                    <text id="sk-ang" x="126" y="244" font-family="'Roboto Mono', monospace" font-size="9" font-weight="700" fill="#FFB300">180°</text>
+                  </svg>
+
+                  <!-- Feedback inferior -->
+                  <div class="absolute inset-x-3 bottom-4 z-10">
+                    <div id="rep-status" class="st st-ok rounded-2xl border px-3 py-2 text-center font-mono text-[11px] font-bold uppercase tracking-wider backdrop-blur">Arriba · listo</div>
+                    <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+                      <div id="rep-bar" class="h-full rounded-full" style="width:0%;background:#00E676"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="phone-floor" aria-hidden="true"></div>
+
+            <!-- Chips flotantes -->
+            <div class="glass animate-float absolute -left-4 top-[22%] hidden items-center gap-2 rounded-2xl px-3 py-2 sm:flex lg:-left-16" style="animation-delay:-2s" aria-hidden="true">
+              <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-neon/15 text-neon"><svg class="ico h-4 w-4"><use href="#i-check"/></svg></span>
+              <span class="leading-tight"><span class="block text-[10px] uppercase tracking-wide text-slate-500">Codo</span><span class="block font-mono text-sm font-bold text-neon">90° ✓</span></span>
+            </div>
+            <div class="glass animate-float absolute -right-4 top-[46%] hidden items-center gap-2 rounded-2xl px-3 py-2 sm:flex lg:-right-14" style="animation-delay:-4s" aria-hidden="true">
+              <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-neon/15 text-neon"><svg class="ico h-4 w-4"><use href="#i-check"/></svg></span>
+              <span class="leading-tight"><span class="block text-[10px] uppercase tracking-wide text-slate-500">Espalda</span><span class="block font-mono text-sm font-bold text-neon">Recta ✓</span></span>
+            </div>
+            <div class="glass glass-red animate-float absolute -left-2 bottom-[13%] hidden items-center gap-2 rounded-2xl px-3 py-2 sm:flex lg:-left-14" style="animation-delay:-1s" aria-hidden="true">
+              <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-crimson/15 text-crimson"><svg class="ico h-4 w-4"><use href="#i-x"/></svg></span>
+              <span class="leading-tight"><span class="block text-[10px] uppercase tracking-wide text-slate-500">Cadera hundida</span><span class="block font-mono text-sm font-bold text-crimson">Rep. bloqueada</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ===== C. COMPARATIVA ===== -->
+    <section id="por-que" class="relative scroll-mt-16 py-20 sm:py-28">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="reveal mx-auto max-w-3xl text-center">
+          <p class="font-mono text-xs uppercase tracking-[.3em] text-neon">¿Por qué EMDoryoku?</p>
+          <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">Apps tradicionales <span class="text-slate-500">vs.</span> <span class="text-neon">EMDoryoku</span></h2>
+          <p class="mt-4 text-slate-400">Contar flexiones no es lo mismo que validarlas. Una te deja engañarte; la otra no.</p>
+        </div>
+
+        <div class="mt-14 grid gap-6 lg:grid-cols-2 lg:gap-8">
+          <!-- Las otras apps -->
+          <article class="reveal glass glass-red card-lift rounded-3xl p-6 sm:p-8">
+            <div class="flex items-center gap-3">
+              <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-crimson/15 text-crimson"><svg class="ico h-6 w-6" aria-hidden="true"><use href="#i-x"/></svg></span>
+              <div>
+                <p class="font-mono text-[11px] uppercase tracking-widest text-crimson">Lo de siempre</p>
+                <h3 class="font-display text-xl font-bold text-white sm:text-2xl">Las otras apps</h3>
+              </div>
+            </div>
+            <ul class="mt-7 space-y-4 text-slate-400">
+              <li class="flex gap-3"><svg class="ico mt-0.5 h-5 w-5 shrink-0 text-crimson" aria-hidden="true"><use href="#i-x"/></svg><span><strong class="font-semibold text-slate-200">Conteo manual</strong> tocando la pantalla con la nariz o pulsando botones.</span></li>
+              <li class="flex gap-3"><svg class="ico mt-0.5 h-5 w-5 shrink-0 text-crimson" aria-hidden="true"><use href="#i-x"/></svg><span><strong class="font-semibold text-slate-200">Sensores de proximidad</strong> propensos a fallos y falsos positivos.</span></li>
+              <li class="flex gap-3"><svg class="ico mt-0.5 h-5 w-5 shrink-0 text-crimson" aria-hidden="true"><use href="#i-x"/></svg><span><strong class="font-semibold text-slate-200">Repeticiones a medio rango</strong> que cuentan igual que una completa.</span></li>
+              <li class="flex gap-3"><svg class="ico mt-0.5 h-5 w-5 shrink-0 text-crimson" aria-hidden="true"><use href="#i-x"/></svg><span><strong class="font-semibold text-slate-200">Trampas fáciles:</strong> nadie vigila tu espalda, tu cadera ni tu profundidad.</span></li>
+            </ul>
+          </article>
+
+          <!-- EMDoryoku -->
+          <article class="reveal glass glass-neon card-lift rounded-3xl p-6 sm:p-8">
+            <div class="flex items-center gap-3">
+              <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-neon/15 text-neon"><svg class="ico h-6 w-6" aria-hidden="true"><use href="#i-check"/></svg></span>
+              <div>
+                <p class="font-mono text-[11px] uppercase tracking-widest text-neon">El nuevo estándar</p>
+                <h3 class="font-display text-xl font-bold text-white sm:text-2xl"><span class="text-neon">EM</span>Doryoku</h3>
+              </div>
+            </div>
+            <ul class="mt-7 space-y-4 text-slate-300">
+              <li class="flex gap-3"><svg class="ico mt-0.5 h-5 w-5 shrink-0 text-neon" aria-hidden="true"><use href="#i-check"/></svg><span><strong class="font-semibold text-white">Detección biométrica 3D</strong> de tus articulaciones con la cámara frontal.</span></li>
+              <li class="flex gap-3"><svg class="ico mt-0.5 h-5 w-5 shrink-0 text-neon" aria-hidden="true"><use href="#i-check"/></svg><span><strong class="font-semibold text-white">Bloqueo de repetición</strong> si la cadera se hunde o la espalda se curva.</span></li>
+              <li class="flex gap-3"><svg class="ico mt-0.5 h-5 w-5 shrink-0 text-neon" aria-hidden="true"><use href="#i-check"/></svg><span><strong class="font-semibold text-white">Audio al romper los 90°:</strong> sabes en el acto cuándo la repetición es válida.</span></li>
+              <li class="flex gap-3"><svg class="ico mt-0.5 h-5 w-5 shrink-0 text-neon" aria-hidden="true"><use href="#i-check"/></svg><span><strong class="font-semibold text-white">Respeto estricto a tu cuerpo:</strong> técnica limpia, progreso real y sin lesiones tontas.</span></li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+    <!-- ===== D. LAS 3 COLUMNAS ===== -->
+    <section id="sistema" class="relative scroll-mt-16 border-y border-white/5 bg-asphalt/60 py-20 sm:py-28">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="reveal mx-auto max-w-3xl text-center">
+          <p class="font-mono text-xs uppercase tracking-[.3em] text-neon">El sistema</p>
+          <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">Las 3 columnas de <span class="text-neon">EMDoryoku</span></h2>
+          <p class="mt-4 text-slate-400">Tecnología que vigila, un pacto que te compromete y un sistema de rangos que premia la calidad.</p>
+        </div>
+
+        <div class="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <!-- 1. Ojo Biométrico -->
+          <article class="reveal glass card-lift group rounded-3xl p-7 hover:border-neon/50 hover:shadow-[0_0_40px_-10px_rgba(0,230,118,.45)]">
+            <span class="flex h-14 w-14 items-center justify-center rounded-2xl bg-neon/10 text-neon ring-1 ring-neon/30 transition group-hover:scale-110 group-hover:bg-neon/20"><svg class="ico h-7 w-7" aria-hidden="true"><use href="#i-eye"/></svg></span>
+            <p class="mt-6 font-mono text-xs text-neon">01 · IA LOCAL</p>
+            <h3 class="mt-1 font-display text-2xl font-bold text-white">Ojo Biométrico</h3>
+            <p class="mt-3 leading-relaxed text-slate-400">Un algoritmo de visión calcula los ángulos de tus articulaciones en tiempo real y valida cada repetición. <strong class="font-semibold text-slate-200">100% privado:</strong> ningún frame sale de tu dispositivo ni se guarda en la nube.</p>
+            <div class="mt-6 flex items-center gap-3 rounded-xl border border-white/5 bg-black/20 px-4 py-3 font-mono text-sm">
+              <span class="text-slate-500">codo</span><span class="text-neon">≤ 90°</span><span class="text-slate-600">|</span><span class="text-slate-500">espalda</span><span class="text-neon">recta</span>
+            </div>
+          </article>
+
+          <!-- 2. La Regla Autoimpuesta -->
+          <article class="reveal glass card-lift group rounded-3xl p-7 hover:border-crimson/50 hover:shadow-[0_0_40px_-10px_rgba(255,23,68,.45)]">
+            <span class="flex h-14 w-14 items-center justify-center rounded-2xl bg-crimson/10 text-crimson ring-1 ring-crimson/30 transition group-hover:scale-110 group-hover:bg-crimson/20"><svg class="ico h-7 w-7" aria-hidden="true"><use href="#i-flame"/></svg></span>
+            <p class="mt-6 font-mono text-xs text-crimson">02 · EL PACTO</p>
+            <h3 class="mt-1 font-display text-2xl font-bold text-white">La Regla Autoimpuesta</h3>
+            <p class="mt-3 leading-relaxed text-slate-400">Declara tu pacto de repeticiones antes de empezar. Si te rindes o descuidas la postura, <strong class="font-semibold text-slate-200">desbloqueas penitencias de compensación</strong> para salvar tu racha.</p>
+            <div class="mt-6 flex items-center gap-3 rounded-xl border border-crimson/20 bg-crimson/5 px-4 py-3 font-mono text-sm">
+              <span class="text-slate-500">pacto</span><span class="text-fire">50 reps</span><span class="text-slate-600">→</span><span class="text-crimson">penitencia</span>
+            </div>
+          </article>
+
+          <!-- 3. Puntos Doryoku y Rangos -->
+          <article class="reveal glass card-lift group rounded-3xl p-7 hover:border-fire/50 hover:shadow-[0_0_40px_-10px_rgba(255,179,0,.45)] md:col-span-2 lg:col-span-1">
+            <span class="flex h-14 w-14 items-center justify-center rounded-2xl bg-fire/10 text-fire ring-1 ring-fire/30 transition group-hover:scale-110 group-hover:bg-fire/20"><svg class="ico h-7 w-7" aria-hidden="true"><use href="#i-trophy"/></svg></span>
+            <p class="mt-6 font-mono text-xs text-fire">03 · HONOR</p>
+            <h3 class="mt-1 font-display text-2xl font-bold text-white">Puntos Doryoku y Rangos</h3>
+            <p class="mt-3 leading-relaxed text-slate-400">Sube de rango a través de las <strong class="font-semibold text-slate-200">8 Puertas del Esfuerzo</strong>. La calidad de la flexión vale más que la velocidad vacía.</p>
+            <div class="mt-6" aria-label="Progreso por las 8 puertas: 5 abiertas">
+              <div class="flex items-center gap-1.5" aria-hidden="true">
+                <span class="h-2.5 flex-1 rounded-full bg-fire shadow-[0_0_10px_rgba(255,179,0,.6)]"></span>
+                <span class="h-2.5 flex-1 rounded-full bg-fire shadow-[0_0_10px_rgba(255,179,0,.6)]"></span>
+                <span class="h-2.5 flex-1 rounded-full bg-fire shadow-[0_0_10px_rgba(255,179,0,.6)]"></span>
+                <span class="h-2.5 flex-1 rounded-full bg-fire shadow-[0_0_10px_rgba(255,179,0,.6)]"></span>
+                <span class="h-2.5 flex-1 rounded-full bg-fire shadow-[0_0_10px_rgba(255,179,0,.6)]"></span>
+                <span class="h-2.5 flex-1 rounded-full bg-white/10"></span>
+                <span class="h-2.5 flex-1 rounded-full bg-white/10"></span>
+                <span class="h-2.5 flex-1 rounded-full bg-white/10"></span>
+              </div>
+              <div class="mt-2 flex justify-between font-mono text-[11px] text-slate-500"><span>Puerta 1</span><span class="text-fire">Puerta 5 · 2 480 pts</span><span>Puerta 8</span></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+    <!-- ===== LA REGLA (filosofía) ===== -->
+    <section id="la-regla" class="relative scroll-mt-16 overflow-hidden py-20 sm:py-28">
+      <div class="pointer-events-none absolute left-1/2 top-1/2 h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-crimson/10 blur-[130px]" aria-hidden="true"></div>
+      <div class="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+        <p class="reveal font-mono text-xs uppercase tracking-[.3em] text-crimson">努力 · La Regla Autoimpuesta</p>
+        <blockquote class="reveal mt-6">
+          <p class="font-display text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
+            «El progreso no depende del talento, sino del <span class="text-fire">pacto</span> que haces contigo mismo.»
+          </p>
+        </blockquote>
+        <p class="reveal mx-auto mt-6 max-w-2xl text-base leading-relaxed text-slate-400 sm:text-lg">
+          Inspirada en la regla autoimpuesta de Might Guy: si fallas el pacto, pagas la penitencia. En EMDoryoku ocurre lo mismo con la técnica: <strong class="font-semibold text-slate-200">si rompes la forma, la repetición no cuenta.</strong>
+        </p>
+        <div class="reveal mt-10 grid gap-3 sm:grid-cols-3">
+          <div class="glass rounded-2xl px-4 py-5"><p class="font-mono text-2xl font-bold text-neon">Técnica</p><p class="mt-1 text-sm text-slate-400">Codo a 90° y espalda recta</p></div>
+          <div class="glass rounded-2xl px-4 py-5"><p class="font-mono text-2xl font-bold text-fire">Pacto</p><p class="mt-1 text-sm text-slate-400">Tu meta, declarada antes de empezar</p></div>
+          <div class="glass rounded-2xl px-4 py-5"><p class="font-mono text-2xl font-bold text-crimson">Penitencia</p><p class="mt-1 text-sm text-slate-400">Compensas lo que dejaste a medias</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== E. CÓMO ENTRENAR EN 3 PASOS ===== -->
+    <section id="como-funciona" class="relative scroll-mt-16 border-y border-white/5 bg-asphalt/60 py-20 sm:py-28">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="reveal mx-auto max-w-3xl text-center">
+          <p class="font-mono text-xs uppercase tracking-[.3em] text-neon">Cómo funciona</p>
+          <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">Cómo entrenar en <span class="text-neon">3 pasos</span></h2>
+        </div>
+
+        <ol class="relative mt-14 grid gap-6 md:grid-cols-3">
+          <li class="reveal glass card-lift relative rounded-3xl p-7 hover:border-neon/40">
+            <span class="font-mono text-6xl font-bold text-neon/20">01</span>
+            <h3 class="mt-2 font-display text-xl font-bold text-white">Apoya tu teléfono</h3>
+            <p class="mt-3 leading-relaxed text-slate-400">Colócalo a <strong class="font-mono font-medium text-neon">45°</strong> en el suelo, apuntando a tu zona de flexión. La cámara frontal hará el resto.</p>
+          </li>
+          <li class="reveal glass card-lift relative rounded-3xl p-7 hover:border-fire/40">
+            <span class="font-mono text-6xl font-bold text-fire/20">02</span>
+            <h3 class="mt-2 font-display text-xl font-bold text-white">Sella tu pacto</h3>
+            <p class="mt-3 leading-relaxed text-slate-400">Elige tu meta y tu regla autoimpuesta. Una vez declarada, no hay vuelta atrás.</p>
+          </li>
+          <li class="reveal glass card-lift relative rounded-3xl p-7 hover:border-neon/40">
+            <span class="font-mono text-6xl font-bold text-neon/20">03</span>
+            <h3 class="mt-2 font-display text-xl font-bold text-white">Empuja sin parar</h3>
+            <p class="mt-3 leading-relaxed text-slate-400">La app te avisa por <strong class="font-semibold text-slate-200">sonido</strong> cuando bajas lo suficiente y suma solo cuando completas el movimiento.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+    <!-- ===== F. DESCARGA DIRECTA & VERIFICACIÓN ===== -->
+    <section id="descarga" class="relative scroll-mt-16 overflow-hidden py-20 sm:py-28">
+      <div class="pointer-events-none absolute left-1/2 top-1/2 h-[30rem] w-[44rem] max-w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-neon/10 blur-[120px]" aria-hidden="true"></div>
+      <div class="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+        <div class="reveal glass glass-neon rounded-[2rem] p-6 sm:p-10 lg:p-12">
+          <div class="text-center">
+            <p class="font-mono text-xs uppercase tracking-[.3em] text-neon">Descarga directa</p>
+            <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">Forja tu disciplina <span class="text-neon">hoy</span></h2>
+            <p class="mx-auto mt-4 max-w-xl text-slate-400">Instalador oficial para Android. Sin tiendas, sin registro, sin intermediarios.</p>
+
+            <a href="/releases/EMDoryoku-latest.apk" download="EMDoryoku-v1.0.apk"
+               class="btn-glow mx-auto mt-8 inline-flex w-full max-w-md items-center justify-center gap-4 rounded-2xl bg-neon px-6 py-5 text-carbon shadow-[0_0_40px_rgba(0,230,118,.45)] hover:scale-[1.03] hover:shadow-[0_0_70px_rgba(0,230,118,.75)] active:scale-95 sm:w-auto sm:px-10">
+              <svg class="ico-fill h-9 w-9 shrink-0" aria-hidden="true"><use href="#i-android"/></svg>
+              <span class="text-left leading-tight">
+                <span class="block text-lg font-extrabold sm:text-xl">Descargar EMDoryoku-v1.0.apk</span>
+                <span class="block font-mono text-xs font-medium text-carbon/75">v1.0 MVP · ~35 MB · Android 8.0+</span>
+              </span>
+            </a>
+          </div>
+
+          <div class="mt-12 grid gap-6 lg:grid-cols-2">
+            <!-- Requisitos -->
+            <div class="rounded-2xl border border-white/10 bg-black/20 p-6">
+              <h3 class="font-display text-lg font-bold text-white">Requisitos mínimos</h3>
+              <ul class="mt-4 space-y-3 text-sm text-slate-300">
+                <li class="flex gap-3"><svg class="ico mt-0.5 h-5 w-5 shrink-0 text-neon" aria-hidden="true"><use href="#i-check"/></svg><span><strong class="text-white">Android 8.0</strong> (Oreo) o superior.</span></li>
+                <li class="flex gap-3"><svg class="ico mt-0.5 h-5 w-5 shrink-0 text-neon" aria-hidden="true"><use href="#i-check"/></svg><span>Optimizada para <strong class="text-white">gama media</strong>: Snapdragon, Helio y Exynos.</span></li>
+                <li class="flex gap-3"><svg class="ico mt-0.5 h-5 w-5 shrink-0 text-neon" aria-hidden="true"><use href="#i-check"/></svg><span>Cámara frontal y ~100 MB libres.</span></li>
+              </ul>
+            </div>
+
+            <!-- Instalación -->
+            <div class="rounded-2xl border border-white/10 bg-black/20 p-6">
+              <h3 class="font-display text-lg font-bold text-white">Instalación en 3 pasos</h3>
+              <ol class="mt-4 space-y-3 text-sm text-slate-300">
+                <li class="flex gap-3"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-neon/15 font-mono text-xs font-bold text-neon">1</span><span><strong class="text-white">Descarga</strong> el archivo <code class="font-mono text-neon">.apk</code>.</span></li>
+                <li class="flex gap-3"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-fire/15 font-mono text-xs font-bold text-fire">2</span><span><strong class="text-white">Permite la instalación de fuentes desconocidas</strong> en los ajustes de Android.</span></li>
+                <li class="flex gap-3"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-neon/15 font-mono text-xs font-bold text-neon">3</span><span><strong class="text-white">Abre y entrena.</strong> Concede el permiso de cámara.</span></li>
+              </ol>
+            </div>
+          </div>
+
+          <!-- Hash SHA-256 -->
+          <div class="mt-6 rounded-2xl border border-white/10 bg-black/30 p-5">
+            <div class="flex flex-wrap items-center gap-2 text-sm font-semibold text-white">
+              <svg class="ico h-5 w-5 text-neon" aria-hidden="true"><use href="#i-shield"/></svg>
+              Verificación de integridad (SHA-256)
+              <span class="font-mono text-xs font-normal text-slate-500">· para usuarios técnicos</span>
+            </div>
+            <!-- TODO al publicar: reemplazar los ceros por el hash real (ver releases/README.md) -->
+            <div class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <code id="sha-value" class="min-w-0 flex-1 break-all rounded-xl border border-white/5 bg-carbon px-4 py-3 font-mono text-xs leading-relaxed text-slate-300 sm:text-[13px]">0000000000000000000000000000000000000000000000000000000000000000</code>
+              <button id="copy-sha" type="button"
+                      class="btn-glow inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-semibold text-white hover:scale-105 hover:border-neon/60 hover:bg-neon/10 hover:shadow-[0_0_24px_rgba(0,230,118,.25)] active:scale-95">
+                <svg class="ico h-4 w-4" aria-hidden="true"><use href="#i-copy"/></svg>
+                <span id="copy-label">Copiar</span>
+              </button>
+            </div>
+            <p class="mt-3 font-mono text-xs text-slate-500">PowerShell: <span class="text-slate-400">Get-FileHash .\EMDoryoku-v1.0.apk -Algorithm SHA256</span> · Linux: <span class="text-slate-400">sha256sum EMDoryoku-v1.0.apk</span></p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ===== G. PREGUNTAS FRECUENTES ===== -->
+    <section id="faq" class="relative scroll-mt-16 border-t border-white/5 bg-asphalt/60 py-20 sm:py-28">
+      <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <div class="reveal text-center">
+          <p class="font-mono text-xs uppercase tracking-[.3em] text-neon">FAQ</p>
+          <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">Preguntas <span class="text-neon">frecuentes</span></h2>
+        </div>
+
+        <div id="faq-list" class="mt-12 space-y-3">
+          <div class="reveal glass rounded-2xl transition-colors" data-faq>
+            <h3>
+              <button type="button" aria-expanded="false" aria-controls="faq-1" id="faq-btn-1" class="flex w-full items-center justify-between gap-4 px-5 py-5 text-left font-semibold text-white sm:px-6">
+                <span>¿La app graba o sube mis videos a internet?</span>
+                <svg class="ico h-5 w-5 shrink-0 text-neon transition-transform duration-300" aria-hidden="true"><use href="#i-chevron"/></svg>
+              </button>
+            </h3>
+            <div id="faq-1" class="faq-panel" role="region" aria-labelledby="faq-btn-1" data-open="false"><div><p class="px-5 pb-5 leading-relaxed text-slate-400 sm:px-6"><strong class="text-slate-200">No.</strong> Todo el procesamiento ocurre en la memoria RAM de tu dispositivo y cada fotograma se descarta al instante. Nada se guarda ni se envía a ningún servidor.</p></div></div>
+          </div>
+
+          <div class="reveal glass rounded-2xl transition-colors" data-faq>
+            <h3>
+              <button type="button" aria-expanded="false" aria-controls="faq-2" id="faq-btn-2" class="flex w-full items-center justify-between gap-4 px-5 py-5 text-left font-semibold text-white sm:px-6">
+                <span>¿Consume mucha batería?</span>
+                <svg class="ico h-5 w-5 shrink-0 text-neon transition-transform duration-300" aria-hidden="true"><use href="#i-chevron"/></svg>
+              </button>
+            </h3>
+            <div id="faq-2" class="faq-panel" role="region" aria-labelledby="faq-btn-2" data-open="false"><div><p class="px-5 pb-5 leading-relaxed text-slate-400 sm:px-6">Está optimizada para funcionar a <strong class="font-mono text-slate-200">20-25 FPS</strong>, lo justo para validar tu técnica sin calentar los procesadores de gama media.</p></div></div>
+          </div>
+
+          <div class="reveal glass rounded-2xl transition-colors" data-faq>
+            <h3>
+              <button type="button" aria-expanded="false" aria-controls="faq-3" id="faq-btn-3" class="flex w-full items-center justify-between gap-4 px-5 py-5 text-left font-semibold text-white sm:px-6">
+                <span>¿Qué pasa si hago la flexión a medias?</span>
+                <svg class="ico h-5 w-5 shrink-0 text-neon transition-transform duration-300" aria-hidden="true"><use href="#i-chevron"/></svg>
+              </button>
+            </h3>
+            <div id="faq-3" class="faq-panel" role="region" aria-labelledby="faq-btn-3" data-open="false"><div><p class="px-5 pb-5 leading-relaxed text-slate-400 sm:px-6">La app mide el ángulo de tu codo. Si <strong class="text-slate-200">no rompes los 90°</strong>, el contador no sube: la repetición simplemente no cuenta.</p></div></div>
+          </div>
+
+          <div class="reveal glass rounded-2xl transition-colors" data-faq>
+            <h3>
+              <button type="button" aria-expanded="false" aria-controls="faq-4" id="faq-btn-4" class="flex w-full items-center justify-between gap-4 px-5 py-5 text-left font-semibold text-white sm:px-6">
+                <span>¿Habrá versión para iOS o tienda oficial?</span>
+                <svg class="ico h-5 w-5 shrink-0 text-neon transition-transform duration-300" aria-hidden="true"><use href="#i-chevron"/></svg>
+              </button>
+            </h3>
+            <div id="faq-4" class="faq-panel" role="region" aria-labelledby="faq-btn-4" data-open="false"><div><p class="px-5 pb-5 leading-relaxed text-slate-400 sm:px-6">Está en la hoja de ruta, <strong class="text-slate-200">tras la fase MVP de Android</strong>. Por ahora la distribución es directa mediante el APK.</p></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== H. FOOTER ===== -->
+  <footer class="border-t border-white/5 bg-carbon">
+    <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+      <div class="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
+        <div>
+          <a href="#inicio" class="font-display text-2xl font-extrabold tracking-tight text-white"><span class="text-neon text-glow">EM</span>Doryoku</a>
+          <p class="mt-3 max-w-sm text-sm leading-relaxed text-slate-400">努力 — esfuerzo y disciplina inquebrantable. La cámara valida tu técnica; tú pones la voluntad.</p>
+          <p class="mt-5 inline-flex items-center gap-2 rounded-full border border-neon/25 bg-neon/5 px-3 py-1.5 font-mono text-xs text-neon">
+            <svg class="ico h-4 w-4" aria-hidden="true"><use href="#i-shield"/></svg>
+            Zero-data collection de cámara
+          </p>
+        </div>
+
+        <nav aria-label="Enlaces del sitio">
+          <h2 class="font-mono text-xs uppercase tracking-[.25em] text-slate-500">Explorar</h2>
+          <ul class="mt-4 space-y-2.5 text-sm">
+            <li><a href="#por-que" class="text-slate-400 transition-colors hover:text-neon">¿Por qué EMDoryoku?</a></li>
+            <li><a href="#como-funciona" class="text-slate-400 transition-colors hover:text-neon">Cómo Funciona</a></li>
+            <li><a href="#descarga" class="text-slate-400 transition-colors hover:text-neon">Descarga</a></li>
+            <li><a href="#faq" class="text-slate-400 transition-colors hover:text-neon">Preguntas Frecuentes</a></li>
+          </ul>
+        </nav>
+
+        <nav aria-label="Legal y comunidad">
+          <h2 class="font-mono text-xs uppercase tracking-[.25em] text-slate-500">Legal y comunidad</h2>
+          <ul class="mt-4 space-y-2.5 text-sm">
+            <li><button type="button" data-dialog="dlg-terms" class="text-slate-400 transition-colors hover:text-neon">Términos de uso</button></li>
+            <li><button type="button" data-dialog="dlg-privacy" class="text-slate-400 transition-colors hover:text-neon">Política de privacidad</button></li>
+            <!-- TODO: reemplazar por la URL real del repositorio -->
+            <li><a href="https://github.com/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-slate-400 transition-colors hover:text-neon"><svg class="ico-fill h-4 w-4" aria-hidden="true"><use href="#i-github"/></svg>GitHub</a></li>
+          </ul>
+        </nav>
+      </div>
+
+      <div class="mt-12 flex flex-col items-center justify-between gap-3 border-t border-white/5 pt-6 text-center text-xs text-slate-500 sm:flex-row sm:text-left">
+        <p>Creado dentro del ecosistema <span class="font-semibold text-neon">EM</span></p>
+        <p class="font-mono">© <span id="year">2026</span> EMDoryoku · v1.0 MVP</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===== Diálogos (demo / privacidad / términos) ===== -->
+  <dialog id="dlg-demo" class="m-auto w-[calc(100%-2rem)] max-w-2xl rounded-3xl border border-neon/30 bg-asphalt p-0 text-slate-300 shadow-[0_0_80px_-10px_rgba(0,230,118,.4)] backdrop:bg-black/80 backdrop:backdrop-blur-sm">
+    <div class="p-6 sm:p-8">
+      <div class="flex items-start justify-between gap-4">
+        <h2 class="font-display text-2xl font-bold text-white">Demo en video</h2>
+        <button type="button" data-close aria-label="Cerrar" class="rounded-lg p-1.5 text-slate-400 transition hover:bg-white/10 hover:text-white"><svg class="ico h-5 w-5" aria-hidden="true"><use href="#i-x"/></svg></button>
+      </div>
+      <!-- TODO: sustituir este bloque por <video controls src="/media/demo.mp4"> o un <iframe> cuando exista la demo -->
+      <div class="mt-5 flex aspect-video flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-white/15 bg-black/30 text-center">
+        <span class="flex h-14 w-14 items-center justify-center rounded-full bg-neon/15 text-neon"><svg class="ico-fill h-6 w-6" aria-hidden="true"><use href="#i-play"/></svg></span>
+        <p class="px-4 text-sm text-slate-400">La demo en video llegará muy pronto.<br />Mientras tanto, mira el código y la comunidad en GitHub.</p>
+      </div>
+      <a href="https://github.com/" target="_blank" rel="noopener noreferrer" class="btn-glow mt-5 inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white hover:border-neon/60 hover:bg-neon/10"><svg class="ico-fill h-4 w-4" aria-hidden="true"><use href="#i-github"/></svg>Ver repositorio</a>
+    </div>
+  </dialog>
+
+  <dialog id="dlg-privacy" class="m-auto w-[calc(100%-2rem)] max-w-2xl rounded-3xl border border-neon/30 bg-asphalt p-0 text-slate-300 shadow-[0_0_80px_-10px_rgba(0,230,118,.4)] backdrop:bg-black/80 backdrop:backdrop-blur-sm">
+    <div class="p-6 sm:p-8">
+      <div class="flex items-start justify-between gap-4">
+        <h2 class="font-display text-2xl font-bold text-white">Política de privacidad</h2>
+        <button type="button" data-close aria-label="Cerrar" class="rounded-lg p-1.5 text-slate-400 transition hover:bg-white/10 hover:text-white"><svg class="ico h-5 w-5" aria-hidden="true"><use href="#i-x"/></svg></button>
+      </div>
+      <div class="mt-4 space-y-3 text-sm leading-relaxed text-slate-400">
+        <p><strong class="text-neon">Zero-data collection de cámara.</strong> EMDoryoku procesa la imagen de la cámara frontal únicamente en la memoria RAM de tu dispositivo para calcular ángulos articulares. Ningún fotograma se graba, se almacena ni se envía a internet.</p>
+        <p>La app no requiere cuenta ni registro. Tu progreso (pactos, rachas y Puntos Doryoku) permanece en tu teléfono.</p>
+        <p>Este sitio web no usa cookies de seguimiento ni analíticas de terceros.</p>
+        <p class="font-mono text-xs text-slate-500">Texto provisional de la versión MVP: revísalo con asesoría legal antes de publicar.</p>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="dlg-terms" class="m-auto w-[calc(100%-2rem)] max-w-2xl rounded-3xl border border-neon/30 bg-asphalt p-0 text-slate-300 shadow-[0_0_80px_-10px_rgba(0,230,118,.4)] backdrop:bg-black/80 backdrop:backdrop-blur-sm">
+    <div class="p-6 sm:p-8">
+      <div class="flex items-start justify-between gap-4">
+        <h2 class="font-display text-2xl font-bold text-white">Términos de uso</h2>
+        <button type="button" data-close aria-label="Cerrar" class="rounded-lg p-1.5 text-slate-400 transition hover:bg-white/10 hover:text-white"><svg class="ico h-5 w-5" aria-hidden="true"><use href="#i-x"/></svg></button>
+      </div>
+      <div class="mt-4 space-y-3 text-sm leading-relaxed text-slate-400">
+        <p>EMDoryoku se ofrece «tal cual» en su versión MVP. El entrenamiento físico implica riesgos: consulta a un profesional de la salud si tienes dudas y entrena dentro de tus límites.</p>
+        <p>La app es una ayuda para validar la técnica; no sustituye a un entrenador ni a un médico. Instala el APK solo desde esta página oficial y verifica su hash SHA-256.</p>
+        <p class="font-mono text-xs text-slate-500">Texto provisional de la versión MVP: revísalo con asesoría legal antes de publicar.</p>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Toast -->
+  <div id="toast" role="status" aria-live="polite" class="pointer-events-none fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 translate-y-6 rounded-xl border border-neon/40 bg-asphalt px-4 py-2.5 font-mono text-sm text-neon opacity-0 shadow-[0_0_30px_rgba(0,230,118,.3)] transition-all duration-300"></div>
+  <script>
+    (function () {
+      'use strict';
+      var $ = function (s, c) { return (c || document).querySelector(s); };
+      var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+
+      /* Año del footer */
+      var yr = $('#year'); if (yr) yr.textContent = new Date().getFullYear();
+
+      /* Menú móvil */
+      var menuBtn = $('#menu-btn'), menu = $('#mobile-menu');
+      function setMenu(open) {
+        menu.classList.toggle('hidden', !open);
+        menuBtn.setAttribute('aria-expanded', String(open));
+        menuBtn.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+      }
+      menuBtn.addEventListener('click', function () { setMenu(menuBtn.getAttribute('aria-expanded') !== 'true'); });
+      $$('#mobile-menu a').forEach(function (a) { a.addEventListener('click', function () { setMenu(false); }); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setMenu(false); });
+      window.matchMedia('(min-width:1024px)').addEventListener('change', function (e) { if (e.matches) setMenu(false); });
+
+      /* Toast */
+      var toastEl = $('#toast'), toastTimer;
+      function toast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2400);
+      }
+      $$('a[download]').forEach(function (a) {
+        a.addEventListener('click', function () { toast('Descargando EMDoryoku-v1.0.apk…'); });
+      });
+
+      /* Reveal al hacer scroll */
+      var reveals = $$('.reveal');
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) {
+            if (!en.isIntersecting) return;
+            var el = en.target, delay = (reveals.indexOf(el) % 3) * 90;
+            el.style.transitionDelay = delay + 'ms';
+            el.classList.add('is-visible');
+            io.unobserve(el);
+            /* Al terminar, se retira .reveal para no interferir con los hover (card-lift) */
+            setTimeout(function () { el.classList.remove('reveal', 'is-visible'); el.style.transitionDelay = ''; }, 1000 + delay);
+          });
+        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+        reveals.forEach(function (el) { io.observe(el); });
+      } else {
+        reveals.forEach(function (el) { el.classList.add('is-visible'); });
+      }
+
+      /* FAQ acordeón (una pregunta abierta a la vez) */
+      var faqs = $$('[data-faq]');
+      function setFaq(item, open) {
+        $('button', item).setAttribute('aria-expanded', String(open));
+        $('.faq-panel', item).setAttribute('data-open', String(open));
+        item.classList.toggle('is-open', open);
+      }
+      faqs.forEach(function (item) {
+        $('button', item).addEventListener('click', function () {
+          var wasOpen = $('button', item).getAttribute('aria-expanded') === 'true';
+          faqs.forEach(function (o) { setFaq(o, false); });
+          setFaq(item, !wasOpen);
+        });
+      });
+
+      /* Diálogos */
+      $$('[data-dialog]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var d = document.getElementById(b.getAttribute('data-dialog'));
+          if (!d) return;
+          if (d.showModal) { d.showModal(); document.documentElement.style.overflow = 'hidden'; } else { d.setAttribute('open', ''); }
+        });
+      });
+      $$('dialog').forEach(function (d) {
+        d.addEventListener('click', function (e) { if (e.target === d) d.close(); });
+        d.addEventListener('close', function () { document.documentElement.style.overflow = ''; });
+        $$('[data-close]', d).forEach(function (b) { b.addEventListener('click', function () { d.close(); }); });
+      });
+
+      /* Copiar hash SHA-256 */
+      var copyBtn = $('#copy-sha'), copyLabel = $('#copy-label');
+      copyBtn.addEventListener('click', function () {
+        var text = $('#sha-value').textContent.trim();
+        function done() {
+          copyLabel.textContent = 'Copiado ✓';
+          toast('Hash SHA-256 copiado');
+          setTimeout(function () { copyLabel.textContent = 'Copiar'; }, 2000);
+        }
+        function fallback() {
+          var ta = document.createElement('textarea');
+          ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta); ta.select();
+          try { document.execCommand('copy'); done(); } catch (err) { toast('No se pudo copiar'); }
+          document.body.removeChild(ta);
+        }
+        if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(text).then(done, fallback); } else { fallback(); }
+      });
+
+      /* Enlace activo del menú según la sección visible */
+      var links = $$('header nav a[href^="#"]');
+      if ('IntersectionObserver' in window) {
+        var spy = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) {
+            if (!en.isIntersecting) return;
+            links.forEach(function (l) {
+              if (l.getAttribute('href') === '#' + en.target.id) l.setAttribute('aria-current', 'true');
+              else l.removeAttribute('aria-current');
+            });
+          });
+        }, { rootMargin: '-45% 0px -50% 0px' });
+        $$('main section[id]').forEach(function (s) { spy.observe(s); });
+      }
+    })();
+  </script>
+  <script>
+    /* Animación del mockup: esqueleto de pose estimation (vista lateral), cinemática de 2 segmentos para el brazo */
+    (function () {
+      'use strict';
+      var $ = function (s) { return document.querySelector(s); };
+      var body = $('#sk-body'), arm = $('#sk-arm'), head = $('#sk-head'), grp = $('#sk');
+      var arc = $('#sk-arc'), ang = $('#sk-ang'), cnt = $('#rep-count'), stat = $('#rep-status'), bar = $('#rep-bar');
+      if (!body || !arm || !head || !grp || !arc || !ang || !cnt || !stat || !bar) return;
+      var J = {};
+      Array.prototype.forEach.call(document.querySelectorAll('#sk [data-j]'), function (c) { J[c.getAttribute('data-j')] = c; });
+
+      var A = { x: 22, y: 308 };                          /* tobillo (fijo) */
+      var W = { x: 98, y: 308 };                          /* muñeca (fija) */
+      var SEG = 24;                                       /* largo de brazo y antebrazo */
+      var L = Math.hypot(98 - 22, 260 - 308);             /* largo del cuerpo: tobillo → hombro */
+      var TH_TOP = Math.atan2(48, 76), TH_BOT = 21.5 * Math.PI / 180;
+      var GOAL = 20, GREEN = '#00E676', RED = '#FF1744', AMBER = '#FFB300';
+
+      var count = 7, lastStatus = '', lastBad = null;
+      var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+      var set = function (el, k, v) { el.setAttribute(k, v); };
+      var pt = function (p) { return p.x.toFixed(1) + ',' + p.y.toFixed(1); };
+
+      function setStatus(text, bad) {
+        if (text === lastStatus && bad === lastBad) return;
+        lastStatus = text; lastBad = bad;
+        stat.textContent = text;
+        stat.className = 'st rounded-2xl border px-3 py-2 text-center font-mono text-[11px] font-bold uppercase tracking-wider backdrop-blur ' + (bad ? 'st-bad' : 'st-ok');
+      }
+      function setCount(n, animate) {
+        count = n;
+        cnt.textContent = pad(n);
+        bar.style.transition = 'width .4s ease';
+        bar.style.width = Math.min(100, n / GOAL * 100) + '%';
+        if (animate) { cnt.classList.remove('pop'); void cnt.offsetWidth; cnt.classList.add('pop'); }
+      }
+
+      /* depth: 0 = brazos extendidos, 1 = 90° de codo · sag: hundimiento de cadera (unidades SVG) */
+      function draw(depth, sag, bad) {
+        var th = TH_TOP - depth * (TH_TOP - TH_BOT);
+        var S = { x: A.x + L * Math.cos(th), y: A.y - L * Math.sin(th) };
+        var u = { x: Math.cos(th), y: -Math.sin(th) };
+        var n = { x: -u.y, y: u.x };                       /* normal hacia el suelo */
+        var K = { x: A.x + (S.x - A.x) * 0.38 + n.x * sag * 0.35, y: A.y + (S.y - A.y) * 0.38 + n.y * sag * 0.35 };
+        var H = { x: A.x + (S.x - A.x) * 0.64 + n.x * sag, y: A.y + (S.y - A.y) * 0.64 + n.y * sag };
+
+        var vx = W.x - S.x, vy = W.y - S.y, d = Math.min(Math.hypot(vx, vy), 2 * SEG - 0.001);
+        var h = Math.sqrt(Math.max(0, SEG * SEG - d * d / 4));
+        var E = { x: (S.x + W.x) / 2 + (-vy / d) * h, y: (S.y + W.y) / 2 + (vx / d) * h };   /* codo hacia atrás */
+        var elbow = Math.acos(Math.max(-1, Math.min(1, (2 * SEG * SEG - d * d) / (2 * SEG * SEG)))) * 180 / Math.PI;
+
+        set(body, 'points', [pt(A), pt(K), pt(H), pt(S)].join(' '));
+        set(arm, 'points', [pt(S), pt(E), pt(W)].join(' '));
+        set(head, 'cx', (S.x + u.x * 16).toFixed(1)); set(head, 'cy', (S.y + u.y * 16).toFixed(1));
+        [['a', A], ['k', K], ['h', H], ['s', S], ['e', E], ['w', W]].forEach(function (j) {
+          if (!J[j[0]]) return;
+          set(J[j[0]], 'cx', j[1].x.toFixed(1)); set(J[j[0]], 'cy', j[1].y.toFixed(1));
+        });
+
+        var col = bad ? RED : GREEN, ac = bad ? RED : AMBER;
+        grp.style.color = col; set(arc, 'stroke', ac); set(ang, 'fill', ac);
+
+        if (elbow < 172) {
+          var r = 8, a1 = Math.atan2(S.y - E.y, S.x - E.x), a2 = Math.atan2(W.y - E.y, W.x - E.x);
+          var cross = (S.x - E.x) * (W.y - E.y) - (S.y - E.y) * (W.x - E.x);
+          set(arc, 'd', 'M' + (E.x + r * Math.cos(a1)).toFixed(1) + ' ' + (E.y + r * Math.sin(a1)).toFixed(1) +
+            ' A' + r + ' ' + r + ' 0 0 ' + (cross > 0 ? 1 : 0) + ' ' + (E.x + r * Math.cos(a2)).toFixed(1) + ' ' + (E.y + r * Math.sin(a2)).toFixed(1));
+        } else { set(arc, 'd', ''); }
+        set(ang, 'x', (E.x + 16).toFixed(1)); set(ang, 'y', (E.y + 4).toFixed(1));
+        ang.textContent = Math.round(elbow) + '°';
+      }
+
+      /* Ciclo de repeticiones: válidas, una con cadera hundida y una a medias (esas no suman) */
+      var ease = function (p) { return (1 - Math.cos(Math.PI * p)) / 2; };
+      var TYPES = ['ok', 'ok', 'ok', 'sag', 'ok', 'ok', 'half', 'ok'];
+      var DOWN = 950, HOLD = 250, UP = 950, REST = 550, TOTAL = DOWN + HOLD + UP + REST;
+      var elapsed = 0, last = null, running = false, curRep = -1, scored = -1, raf = 0;
+
+      function tick(ts) {
+        if (!running) return;
+        if (last === null) last = ts;
+        elapsed += Math.min(ts - last, 100); last = ts;
+
+        var rep = Math.floor(elapsed / TOTAL), t = elapsed % TOTAL, type = TYPES[rep % TYPES.length];
+        if (rep !== curRep) { curRep = rep; if (count >= GOAL) setCount(0, false); }
+
+        var target = type === 'half' ? 0.55 : 1, depth, phase;
+        if (t < DOWN) { depth = target * ease(t / DOWN); phase = 'down'; }
+        else if (t < DOWN + HOLD) { depth = target; phase = 'hold'; }
+        else if (t < DOWN + HOLD + UP) { depth = target * (1 - ease((t - DOWN - HOLD) / UP)); phase = 'up'; }
+        else { depth = 0; phase = 'rest'; }
+
+        var sag = type === 'sag' ? 12 * depth : 0;
+        var bad = type !== 'ok' && (phase !== 'down' || sag > 5);
+        draw(depth, sag, bad);
+
+        if (phase === 'rest' && scored !== rep && type === 'ok') { scored = rep; setCount(count + 1, true); }
+
+        var msg;
+        if (phase === 'down') msg = sag > 5 ? '✗ Cadera hundida' : 'Bajando…';
+        else if (type === 'ok') msg = phase === 'rest' ? (count >= GOAL ? '🔥 Pacto cumplido' : '+1 · Rep válida') : '✓ 90° alcanzado';
+        else msg = type === 'sag' ? '✗ Cadera hundida · no cuenta' : '✗ Sin 90° · no cuenta';
+        setStatus(msg, bad);
+
+        raf = requestAnimationFrame(tick);
+      }
+
+      function start() { if (running) return; running = true; last = null; raf = requestAnimationFrame(tick); }
+      function stop() { running = false; cancelAnimationFrame(raf); }
+
+      setCount(7, false);
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        draw(1, 0, false); setStatus('✓ 90° alcanzado', false);
+        return;
+      }
+      draw(0, 0, false);
+      var stage = $('.phone-stage');
+      if ('IntersectionObserver' in window && stage) {
+        new IntersectionObserver(function (es) { if (es[0].isIntersecting) start(); else stop(); }, { threshold: 0.05 }).observe(stage);
+      } else { start(); }
+    })();
+  </script>
+</body>
+</html>
