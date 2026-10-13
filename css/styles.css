@@ -19,6 +19,25 @@ html {
       background: #0E1116;
     }
 
+/* Justificación global de textos */
+p,
+.text-justify,
+article p,
+blockquote p,
+.faq-panel p,
+dialog p,
+.text-justified {
+  text-align: justify !important;
+  text-justify: inter-word;
+}
+
+article ul li span,
+.list-justify li span {
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+
     .ico {
       fill: none;
       stroke: currentColor;
