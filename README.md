@@ -1,14 +1,20 @@
 # EMDoryoku — Landing Page
 
-Landing page de una sola página (HTML5 + Tailwind CSS vía CDN) para distribuir el APK de **EMDoryoku**.
-No requiere build ni dependencias: es un único `index.html`.
+Landing page (HTML5 + Tailwind CSS vía CDN) para distribuir el APK de **EMDoryoku**.
+Estructurada de forma modular (HTML, CSS y JS separados) para facilitar el mantenimiento y escalabilidad del proyecto.
 
 ## Estructura
 
 ```
-index.html                       ← toda la landing (HTML + estilos + JS)
+index.html                       ← Estructura semántica principal
+css/
+  styles.css                     ← Estilos personalizados, efectos y utilidades
+js/
+  tailwind-config.js             ← Configuración del tema Tailwind (colores, tipografías, animaciones)
+  main.js                        ← Lógica de interacción (menú móvil, modales, FAQ, toast, scroll spy)
+  mockup.js                      ← Simulación cinemática del esqueleto y animación en smartphone
 releases/
-  README.md                      ← instrucciones para el APK
+  README.md                      ← Instrucciones para el APK
   EMDoryoku-latest.apk           ← (tú lo añades) instalador real
 ```
 
